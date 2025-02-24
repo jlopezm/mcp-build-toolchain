@@ -1,6 +1,7 @@
 import asyncio
 import subprocess
 import re
+import sys
 
 from mcp.server.models import InitializationOptions
 import mcp.types as types
@@ -159,12 +160,55 @@ async def handle_call_tool(
 
         exec_dir = os.path.dirname(os.path.abspath(normalized_path))
 
-        command_result = subprocess.run(
-            [normalized_path], 
-            stdout=subprocess.PIPE, 
-            text=True,
-            cwd=exec_dir 
+        shell = 'cmd'
+        shell_path = os.environ.get('COMSPEC', 'cmd.exe')
+        try:
+            if sys.platform == 'win32':
+                shell_cmd = [shell_path, '/c', normalized_path] if shell == 'cmd' else [shell_path, '-Command', normalized_path]
+            else:
+                shell_cmd = [shell_path, '-c', normalized_path]
+
+            process = await asyncio.create_subprocess_exec(
+                *shell_cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+                cwd=exec_dir
             )
+
+            try:
+                stdout, stderr = await asyncio.wait_for(
+                    process.communicate(), 
+                    timeout=10
+                )
+                
+                return {
+                    "stdout": stdout.decode() if stdout else "",
+                    "stderr": stderr.decode() if stderr else "",
+                    "exit_code": process.returncode,
+                    "command": command,
+                    "shell": shell,
+                    "cwd": exec_dir
+                }
+
+            except asyncio.TimeoutError:
+                try:
+                    process.kill()
+                    await process.wait()
+                except ProcessLookupError:
+                    pass
+                raise TimeoutError(f"Command execution timed out after 10 seconds")
+
+        except TimeoutError:
+            raise
+        except Exception as e:
+            return {
+                "stdout": "",
+                "stderr": str(e),
+                "exit_code": -1,
+                "command": command,
+                "shell": shell,
+                "cwd": exec_dir
+            }
 
         # Notify clients that resources have changed
         # await server.request_context.session.send_resource_list_changed()

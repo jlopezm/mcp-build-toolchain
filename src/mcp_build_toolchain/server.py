@@ -13,12 +13,12 @@ notes: dict[str, str] = {}
 
 server = Server("mcp-build-toolchain")
 
-@server.list_resources()
+""" @server.list_resources()
 async def handle_list_resources() -> list[types.Resource]:
-    """
-    List available note resources.
-    Each note is exposed as a resource with a custom note:// URI scheme.
-    """
+
+    # List available note resources.
+    # Each note is exposed as a resource with a custom note:// URI scheme.
+
     return [
         types.Resource(
             uri=AnyUrl(f"note://internal/{name}"),
@@ -27,14 +27,14 @@ async def handle_list_resources() -> list[types.Resource]:
             mimeType="text/plain",
         )
         for name in notes
-    ]
+    ] """
 
-@server.read_resource()
+""" @server.read_resource()
 async def handle_read_resource(uri: AnyUrl) -> str:
-    """
-    Read a specific note's content by its URI.
-    The note name is extracted from the URI host component.
-    """
+
+    # Read a specific note's content by its URI.
+    # The note name is extracted from the URI host component.
+
     if uri.scheme != "note":
         raise ValueError(f"Unsupported URI scheme: {uri.scheme}")
 
@@ -42,14 +42,14 @@ async def handle_read_resource(uri: AnyUrl) -> str:
     if name is not None:
         name = name.lstrip("/")
         return notes[name]
-    raise ValueError(f"Note not found: {name}")
+    raise ValueError(f"Note not found: {name}") """
 
-@server.list_prompts()
+""" @server.list_prompts()
 async def handle_list_prompts() -> list[types.Prompt]:
-    """
-    List available prompts.
-    Each prompt can have optional arguments to customize its behavior.
-    """
+
+    # List available prompts.
+    # Each prompt can have optional arguments to customize its behavior.
+
     return [
         types.Prompt(
             name="summarize-notes",
@@ -62,16 +62,17 @@ async def handle_list_prompts() -> list[types.Prompt]:
                 )
             ],
         )
-    ]
+    ] """
 
+""" 
 @server.get_prompt()
 async def handle_get_prompt(
     name: str, arguments: dict[str, str] | None
 ) -> types.GetPromptResult:
-    """
-    Generate a prompt by combining arguments with server state.
-    The prompt includes all current notes and can be customized via arguments.
-    """
+
+    # Generate a prompt by combining arguments with server state.
+    # The prompt includes all current notes and can be customized via arguments.
+
     if name != "summarize-notes":
         raise ValueError(f"Unknown prompt: {name}")
 
@@ -94,6 +95,7 @@ async def handle_get_prompt(
             )
         ],
     )
+ """
 
 @server.list_tools()
 async def handle_list_tools() -> list[types.Tool]:
@@ -104,22 +106,28 @@ async def handle_list_tools() -> list[types.Tool]:
     return [
         types.Tool(
             name="build-toolchain",
-            description="Executes the build command",
+            description="Use this tool to build the project when user request to build or compile",
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "command": {"type": "string"},
+                    "command": {
+                        "type": "string",
+                        "description": "This is the file with absolute path to execute the build command for the toolchain",
+                    },
                 },
                 "required": ["command"],
             },
         ),
         types.Tool(
             name="get-compilation-errors",
-            description="Get errors and warning results from compilation result",
+            description="Get errors and warning results from compilation result to evaluate by llm and apply the necessary changes",
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "outfile": {"type": "string"},
+                    "outfile": {
+                        "type": "string",
+                        "description": "This is the file with absolute path to get the compilation errors and warnings",
+                    },
                 },
                 "required": ["outfile"],
             },
@@ -141,8 +149,22 @@ async def handle_call_tool(
 
         command = arguments.get("command")
 
-        command_result = subprocess.run([command],stdout=subprocess.PIPE, 
-                                    text=True )
+        import os
+
+        def normalize_path(path: str) -> str:
+            """Convierte las barras de un path a las correctas según el sistema operativo."""
+            return path.replace("/", os.sep)
+
+        normalized_path = command.replace("/", os.sep) if os.name == "nt" else command
+
+        exec_dir = os.path.dirname(os.path.abspath(normalized_path))
+
+        command_result = subprocess.run(
+            [normalized_path], 
+            stdout=subprocess.PIPE, 
+            text=True,
+            cwd=exec_dir 
+            )
 
         # Notify clients that resources have changed
         # await server.request_context.session.send_resource_list_changed()
@@ -150,7 +172,7 @@ async def handle_call_tool(
         return [
             types.TextContent(
                 type="text",
-                text=f"Result '{command_result.stdout}'",
+                text=f"Result: '{command_result.stdout}'",
             )
         ]
     elif name == "get-compilation-errors":

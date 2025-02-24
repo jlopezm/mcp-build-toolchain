@@ -75,7 +75,7 @@ async def run_complete_test():
         return
     
     # 2. Ejemplo de compilación con gcc (ajustar según necesidades)
-    build_command = "C:\\rfid\\tools\MinGW_8_1_0_64\\bin\gcc.exe"  # Un comando simple para probar, muestra la versión de gcc
+    build_command = "e:/Projects/GRFID/minicoms-code/sw-code-mini/build.cmd"  # Un comando simple para probar, muestra la versión de gcc
     build_result = await test_build_toolchain(build_command)
     
     # 3. Crear un archivo de prueba con algunos errores/advertencias para probar

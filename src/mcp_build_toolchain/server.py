@@ -145,7 +145,7 @@ async def handle_call_tool(
                                     text=True )
 
         # Notify clients that resources have changed
-        await server.request_context.session.send_resource_list_changed()
+        # await server.request_context.session.send_resource_list_changed()
 
         return [
             types.TextContent(
@@ -183,7 +183,7 @@ async def handle_call_tool(
             ]
 
         # Notify clients that resources have changed
-        await server.request_context.session.send_resource_list_changed()
+        # await server.request_context.session.send_resource_list_changed()
 
         return [
             types.TextContent(

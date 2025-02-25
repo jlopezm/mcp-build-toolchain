@@ -2,6 +2,7 @@ import asyncio
 import subprocess
 import re
 import sys
+import os
 
 from mcp.server.models import InitializationOptions
 import mcp.types as types
@@ -106,20 +107,6 @@ async def handle_list_tools() -> list[types.Tool]:
     """
     return [
         types.Tool(
-            name="build-toolchain",
-            description="Use this tool to build the project when user request to build or compile",
-            inputSchema={
-                "type": "object",
-                "properties": {
-                    "command": {
-                        "type": "string",
-                        "description": "This is the file with absolute path to execute the build command for the toolchain",
-                    },
-                },
-                "required": ["command"],
-            },
-        ),
-        types.Tool(
             name="get-compilation-errors",
             description="Get errors and warning results from compilation result to evaluate by llm and apply the necessary changes",
             inputSchema={
@@ -143,100 +130,27 @@ async def handle_call_tool(
     Handle tool execution requests.
     Tools can modify server state and notify clients of changes.
     """
-    if name == "build-toolchain":
 
-        if not arguments:
-            raise ValueError("Missing arguments")
-
-        command = arguments.get("command")
-
-        import os
-
-        def normalize_path(path: str) -> str:
-            """Convierte las barras de un path a las correctas según el sistema operativo."""
-            return path.replace("/", os.sep)
-
-        normalized_path = command.replace("/", os.sep) if os.name == "nt" else command
-
-        exec_dir = os.path.dirname(os.path.abspath(normalized_path))
-
-        shell = 'cmd'
-        shell_path = os.environ.get('COMSPEC', 'cmd.exe')
-        try:
-            if sys.platform == 'win32':
-                shell_cmd = [shell_path, '/c', normalized_path] if shell == 'cmd' else [shell_path, '-Command', normalized_path]
-            else:
-                shell_cmd = [shell_path, '-c', normalized_path]
-
-            process = await asyncio.create_subprocess_exec(
-                *shell_cmd,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE,
-                cwd=exec_dir
-            )
-
-            try:
-                stdout, stderr = await asyncio.wait_for(
-                    process.communicate(), 
-                    timeout=10
-                )
-                
-                return {
-                    "stdout": stdout.decode() if stdout else "",
-                    "stderr": stderr.decode() if stderr else "",
-                    "exit_code": process.returncode,
-                    "command": command,
-                    "shell": shell,
-                    "cwd": exec_dir
-                }
-
-            except asyncio.TimeoutError:
-                try:
-                    process.kill()
-                    await process.wait()
-                except ProcessLookupError:
-                    pass
-                raise TimeoutError(f"Command execution timed out after 10 seconds")
-
-        except TimeoutError:
-            raise
-        except Exception as e:
-            return {
-                "stdout": "",
-                "stderr": str(e),
-                "exit_code": -1,
-                "command": command,
-                "shell": shell,
-                "cwd": exec_dir
-            }
-
-        # Notify clients that resources have changed
-        # await server.request_context.session.send_resource_list_changed()
-
-        return [
-            types.TextContent(
-                type="text",
-                text=f"Result: '{command_result.stdout}'",
-            )
-        ]
-    elif name == "get-compilation-errors":
+    if name == "get-compilation-errors":
         
         if not arguments:
             raise ValueError("Missing arguments")
 
         outfile = arguments.get("outfile")
 
+        normalized_path = outfile.replace("/", os.sep) if os.name == "nt" else outfile
+
         try:
-            with open(outfile, 'r', encoding='utf-8') as file:
+            with open(normalized_path, 'r', encoding='iso-8859-1') as file:
                 lines = file.readlines()
-                filtered_lines = [line.strip() for line in lines if re.search(r'(?i)error|warning', line)]
+                filtered_lines = [line.strip() for line in lines if re.search(r'(?i)error\s+#|warning\s+#', line)]
                 
         except FileNotFoundError:
-            print(f"El archivo '{outfile}' no se encontró.")
+            print(f"El archivo '{outfile}' no se encontró.. OS '{os.name}'")
             return [
                 types.TextContent(
                     type="text",
-                    text=f"El archivo '{outfile}' no se encontró.",
+                    text=f"El archivo '{normalized_path}' no se encontró. OS '{os.name}'",
                 )
             ]
         except Exception as e:
@@ -244,7 +158,7 @@ async def handle_call_tool(
             return [
                 types.TextContent(
                     type="text",
-                    text=f"El archivo '{outfile}' no se encontró.",
+                    text=f"El archivo '{normalized_path}' no se encontró. OS '{os.name}'",
                 )
             ]
 

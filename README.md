@@ -2,6 +2,12 @@
 
 Advanced build toolchain with compilation error analysis and filtering capabilities
 
+The objective of the MCP is minimize use of tokens to allow LLM model to process the warning and errors of compilation process and fix.
+So some build log result could result so big to be sent to model. 
+
+Using Clinerules can send information to specific project and what to do with results.
+Also can use a second file where warning and/or errors can be added to avoid the model to try to fix them.
+
 ## Key Components
 
 ### MCP Tool: get-compilation-errors
@@ -24,16 +30,13 @@ Key features:
 
 Create `.clinerules` in project root to control error handling:
 
-```python
-# .clinerules
-include = ["E501", "W6*"]  # Include specific PEP8 errors
-exclude = ["E265"]         # Ignore comment spacing
-```
+Describe how to compile and how to react to the different errors/warnings:
 
-Rule types:
-- `include`: Patterns to explicitly include
-- `exclude`: Patterns to ignore
-- `severity`: Set minimum severity level (error/warning/info)
+- When is requested to compile and fix the error se bellow description
+- Command to compile
+- Use mcp server tool 'get-compilation-errors' to get the list of warnings and errors.
+- After getting the errors and warnings try to fix them and compile again. Repeat the operation 5 times until no errores are reported.
+- Check `docs/avoidable_errors.md` and do nothing with errors or warning reported in this file.
 
 ### Error Documentation
 

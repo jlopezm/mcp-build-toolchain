@@ -116,6 +116,10 @@ async def handle_list_tools() -> list[types.Tool]:
                         "type": "string",
                         "description": "This is the file with absolute path to get the compilation errors and warnings",
                     },
+                    "regexp": {
+                        "type": "string",
+                        "description": "Regular expression to filter from the compilation log the warnings and errors",
+                    },
                 },
                 "required": ["outfile"],
             },
@@ -137,20 +141,26 @@ async def handle_call_tool(
             raise ValueError("Missing arguments")
 
         outfile = arguments.get("outfile")
+        regexp = arguments.get("regexp")
 
         normalized_path = outfile.replace("/", os.sep) if os.name == "nt" else outfile
+
+        if regexp:
+            regular_expression = regexp
+        else:
+            regular_expression = r'(?i)error\s+#|warning\s+#'
 
         try:
             with open(normalized_path, 'r', encoding='iso-8859-1') as file:
                 lines = file.readlines()
-                filtered_lines = [line.strip() for line in lines if re.search(r'(?i)error\s+#|warning\s+#', line)]
+                filtered_lines = [line.strip() for line in lines if re.search(regular_expression, line)]
                 
         except FileNotFoundError:
-            print(f"El archivo '{outfile}' no se encontró.. OS '{os.name}'")
+            print(f"El archivo '{outfile}' no se encontró.")
             return [
                 types.TextContent(
                     type="text",
-                    text=f"El archivo '{normalized_path}' no se encontró. OS '{os.name}'",
+                    text=f"El archivo '{normalized_path}' no se encontró.",
                 )
             ]
         except Exception as e:
@@ -158,7 +168,7 @@ async def handle_call_tool(
             return [
                 types.TextContent(
                     type="text",
-                    text=f"El archivo '{normalized_path}' no se encontró. OS '{os.name}'",
+                    text=f"El archivo '{normalized_path}' no se encontró.",
                 )
             ]
 

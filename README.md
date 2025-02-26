@@ -1,32 +1,74 @@
-# mcp-build-toolchain MCP server
+# mcp-build-toolchain MCP Server
 
-MCP server that help to build and fix compilation errors
+Advanced build toolchain with compilation error analysis and filtering capabilities
 
-## Components
+## Key Components
 
-### Resources
+### MCP Tool: get-compilation-errors
 
-The server implements a simple note storage system with:
-- Custom note:// URI scheme for accessing individual notes
-- Each note resource has a name, description and text/plain mimetype
+```mermaid
+graph TD
+    A[get-compilation-errors] --> B[Analyzes build output]
+    B --> C[Extracts errors/warnings]
+    C --> D[Filters using .clinerules]
+    D --> E[Provides structured results]
+```
 
-### Prompts
+Key features:
+- Processes raw compilation logs into structured data
+- Integrates with .clinerules for targeted filtering
+- Prioritizes critical errors first
+- Generates actionable remediation steps
 
-The server provides a single prompt:
-- summarize-notes: Creates summaries of all stored notes
-  - Optional "style" argument to control detail level (brief/detailed)
-  - Generates prompt combining all current notes with style preference
+### .clinerules Configuration
 
-### Tools
+Create `.clinerules` in project root to control error handling:
 
-The server implements one tool:
-- add-note: Adds a new note to the server
-  - Takes "name" and "content" as required string arguments
-  - Updates server state and notifies clients of resource changes
+```python
+# .clinerules
+include = ["E501", "W6*"]  # Include specific PEP8 errors
+exclude = ["E265"]         # Ignore comment spacing
+```
+
+Rule types:
+- `include`: Patterns to explicitly include
+- `exclude`: Patterns to ignore
+- `severity`: Set minimum severity level (error/warning/info)
+
+### Error Documentation
+
+Maintain `docs/avoidable_errors.md` with common issues:
+
+```markdown
+## Avoidable Warnings
+- W0611: Unused import → Remove unused packages
+- E302: Expected 2 blank lines → Follow PEP8 spacing
+
+## Ignorable Errors  
+- E266: Too many leading '#' → Style preference
+- W504: Line break after binary operator → Project-specific
+```
 
 ## Configuration
 
-[TODO: Add configuration details specific to your implementation]
+```json
+"mcpServers": {
+  "mcp-build-toolchain": {
+    "command": "uv",
+    "args": [
+      "--directory",
+      "/Users/joaquinlopez/mcp/mcp-build-toolchain",
+      "run",
+      "mcp-build-toolchain"
+    ],
+    "tools": {
+      "get-compilation-errors": {
+        "outfile": "build/errors.log"
+      }
+    }
+  }
+}
+```
 
 ## Quickstart
 

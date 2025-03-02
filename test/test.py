@@ -55,14 +55,13 @@ async def run_complete_test():
         print("No se pudieron obtener las herramientas. Finalizando pruebas.")
         return
     
-    # 3. Crear un archivo de prueba con algunos errores/advertencias para probar
-    test_outfile = "e:/Projects/GRFID/minicoms-code/sw-code-mini/source/out/TMS570.log"
-
-    # with open(test_outfile, "w") as f:
-    #     f.write("gcc: warning: ignoring nonexistent directory\n")
-    #     f.write("main.c:10:15: error: 'foo' undeclared\n")
-    #     f.write("This is a normal line\n")
-    #     f.write("main.c:20:5: Warning: unused variable 'x'\n")
+    test_outfile = 'test_outfile.txt'
+    with open(test_outfile, "w") as f:
+        f.write("gcc: warning: ignoring nonexistent directory\n")
+        f.write("main.c:10:15: error: 'foo' undeclared\n")
+        f.write("This is a normal line\n")
+        f.write("main.c:20:5: Warning: unused variable 'x'\n")
+        f.write("Test adding not ansi character. ó à ü\n")
     
     # 4. Obtener errores de compilación
     errors_result = await test_get_compilation_errors(test_outfile)

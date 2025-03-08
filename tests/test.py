@@ -80,6 +80,7 @@ async def run_complete_test():
         f.write("main.c:10:15: error: 'foo' undeclared\n")
         f.write("This is a normal line\n")
         f.write("main.c:20:5: Warning: unused variable 'x'\n")
+        f.write("main.c:Error #20 Warning: unused variable 'x'\n")
         f.write("Test adding not ansi character. ó à ü\n")
     
     # 4. Obtener errores de compilación con el regexp por defecto

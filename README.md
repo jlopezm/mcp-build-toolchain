@@ -32,11 +32,16 @@ Create `.clinerules` in project root to control error handling:
 
 Describe how to compile and how to react to the different errors/warnings:
 
-- When is requested to compile and fix the error se bellow description
-- Command to compile
+```markdown
+- If user request to check or solve compilation errors or warnings follow to following procedure
+- In case user request to compile or build use the command: build.cmd -> _Replace by user command_
 - Use mcp server tool 'get-compilation-errors' to get the list of warnings and errors.
+- In case the user tells file names, description or regular expression to filter the errors, create the regular expression and use the parameter 'regexp'
 - After getting the errors and warnings try to fix them and compile again. Repeat the operation 5 times until no errores are reported.
 - Check `docs/avoidable_errors.md` and do nothing with errors or warning reported in this file.
+- (Optional): In case you want to set a default regular expression. Add here:
+  - Filter by default the errors and warnings: "error:" or "warning:"
+```
 
 ### Error Documentation
 
@@ -52,6 +57,10 @@ Maintain `docs/avoidable_errors.md` with common issues:
 - W504: Line break after binary operator → Project-specific
 ```
 
+### Prompt examples
+
+
+
 ## Configuration
 
 ```json
@@ -60,7 +69,7 @@ Maintain `docs/avoidable_errors.md` with common issues:
     "command": "uv",
     "args": [
       "--directory",
-      "/Users/joaquinlopez/mcp/mcp-build-toolchain",
+      "/Users/username/mcp/mcp-build-toolchain",  --> Folder where MCP server is installed
       "run",
       "mcp-build-toolchain"
     ],
@@ -113,44 +122,8 @@ On Windows: `%APPDATA%/Claude/claude_desktop_config.json`
   ```
 </details>
 
-## Development
+#### Cline
 
-### Building and Publishing
-
-To prepare the package for distribution:
-
-1. Sync dependencies and update lockfile:
-```bash
-uv sync
-```
-
-2. Build package distributions:
-```bash
-uv build
-```
-
-This will create source and wheel distributions in the `dist/` directory.
-
-3. Publish to PyPI:
-```bash
-uv publish
-```
-
-Note: You'll need to set PyPI credentials via environment variables or command flags:
-- Token: `--token` or `UV_PUBLISH_TOKEN`
-- Or username/password: `--username`/`UV_PUBLISH_USERNAME` and `--password`/`UV_PUBLISH_PASSWORD`
-
-### Debugging
-
-Since MCP servers run over stdio, debugging can be challenging. For the best debugging
-experience, we strongly recommend using the [MCP Inspector](https://github.com/modelcontextprotocol/inspector).
+Cline: `%APPDATA%/\Roaming\Code\User\globalStorage\saoudrizwan.claude-dev\settings\cline_mcp_settings.json`
 
 
-You can launch the MCP Inspector via [`npm`](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) with this command:
-
-```bash
-npx @modelcontextprotocol/inspector uv --directory /Users/joaquinlopez/mcp/mcp-build-toolchain run mcp-build-toolchain
-```
-
-
-Upon launching, the Inspector will display a URL that you can access in your browser to begin debugging.

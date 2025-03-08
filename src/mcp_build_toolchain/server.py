@@ -66,7 +66,7 @@ async def handle_call_tool(
         if regexp:
             regular_expression = regexp
         else:
-            regular_expression = r'(?i)error\s+#|warning\s+#'
+            regular_expression = r'(?i)error:|warning:'
 
         try:
             # Detect appropriate encoding based on OS and locale

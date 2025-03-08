@@ -46,6 +46,25 @@ async def test_get_compilation_errors(outfile: str):
         print(f"Error al obtener errores de compilación: {e}")
         return None
 
+async def test_get_compilation_errors_with_regexp(outfile: str, regexp: str):
+    """Prueba la herramienta get-compilation-errors con parámetro regexp personalizado"""
+    print(f"\n=== Probando get-compilation-errors con archivo: {outfile} y regexp: {regexp} ===")
+    try:
+        # Llamamos directamente a la función handle_call_tool definida en el servidor
+        from mcp_build_toolchain.server import handle_call_tool
+        result = await handle_call_tool(
+            name="get-compilation-errors",
+            arguments={"outfile": outfile, "regexp": regexp}
+        )
+        print("Errores y advertencias filtrados por regexp personalizado:")
+        for content in result:
+            if hasattr(content, "text"):
+                print(content.text)
+        return result
+    except Exception as e:
+        print(f"Error al obtener errores de compilación con regexp: {e}")
+        return None
+
 async def run_complete_test():
     """Ejecuta todas las pruebas en secuencia"""
     # 1. Listar herramientas disponibles
@@ -63,10 +82,15 @@ async def run_complete_test():
         f.write("main.c:20:5: Warning: unused variable 'x'\n")
         f.write("Test adding not ansi character. ó à ü\n")
     
-    # 4. Obtener errores de compilación
+    # 4. Obtener errores de compilación con el regexp por defecto
     errors_result = await test_get_compilation_errors(test_outfile)
     
-    # 5. Limpiar archivo temporal
+    # 5. Obtener errores de compilación con un regexp personalizado
+    # Usamos un regexp que solo captura líneas con 'main.c'
+    custom_regexp = r'main\.c'
+    custom_errors_result = await test_get_compilation_errors_with_regexp(test_outfile, custom_regexp)
+    
+    # 6. Limpiar archivo temporal
     try:
         # os.remove(test_outfile)
         print(f"\nArchivo temporal {test_outfile} eliminado.")

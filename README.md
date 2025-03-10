@@ -99,7 +99,7 @@ On Windows: `%APPDATA%/Claude/claude_desktop_config.json`
       "command": "uv",
       "args": [
         "--directory",
-        "/Users/joaquinlopez/mcp/mcp-build-toolchain",
+        "/Users/username/mcp/mcp-build-toolchain",
         "run",
         "mcp-build-toolchain"
       ]
@@ -124,6 +124,6 @@ On Windows: `%APPDATA%/Claude/claude_desktop_config.json`
 
 #### Cline
 
-Cline: `%APPDATA%/\Roaming\Code\User\globalStorage\saoudrizwan.claude-dev\settings\cline_mcp_settings.json`
+Cline: `%APPDATA%/Roaming\Code\User\globalStorage\saoudrizwan.claude-dev\settings\cline_mcp_settings.json`
 
 

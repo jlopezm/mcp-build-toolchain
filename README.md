@@ -33,14 +33,22 @@ Create `.clinerules` in project root to control error handling:
 Describe how to compile and how to react to the different errors/warnings:
 
 ```markdown
+
+# Files
+Command to build/compile: `.\build.cmd`
+outfile to read to get warnings and errors result from the compilation: `output_log_file.log`, use absolute path.
+
+# Tasks
 - If user request to check or solve compilation errors or warnings follow to following procedure
-- In case user request to compile or build use the command: build.cmd -> _Replace by user command_
-- Use mcp server tool 'get-compilation-errors' to get the list of warnings and errors.
+- In case user request to compile or build use the command: build.cmd *Replace by user command*
+- Use mcp server tool "mcp-build-toolchain" function "get-compilation-errors" to get the list of warnings and errors.
 - In case the user tells file names, description or regular expression to filter the errors, create the regular expression and use the parameter 'regexp'
 - After getting the errors and warnings try to fix them and compile again. Repeat the operation 5 times until no errores are reported.
 - Check `docs/avoidable_errors.md` and do nothing with errors or warning reported in this file.
-- (Optional): In case you want to set a default regular expression. Add here:
-  - Filter by default the errors and warnings: "error:" or "warning:"
+- Filter by default the errors and warnings: "*text to filter errors*" or "*text to filter warnings*"
+    - This filter is applied in any position of the line and is case insensitive.
+- Don't modify anything furthermore than the needed to fix the errors or warnings.
+- If there is a fix that can have different solutions, ask the user for the solution to apply.
 ```
 
 ### Error Documentation

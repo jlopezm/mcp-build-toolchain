@@ -73,20 +73,14 @@ Maintain `docs/avoidable_errors.md` with common issues:
 
 ```json
 "mcpServers": {
-  "mcp-build-toolchain": {
-    "command": "uv",
-    "args": [
-      "--directory",
-      "/Users/username/mcp/mcp-build-toolchain",  --> Folder where MCP server is installed
-      "run",
-      "mcp-build-toolchain"
-    ],
-    "tools": {
-      "get-compilation-errors": {
-        "outfile": "build/errors.log"
-      }
+"mcp-build-toolchain": {
+      "command": "uvx",
+      "args": [
+        "mcp-build-toolchain"
+      ],
+      "disabled": false,
+      "autoApprove": []
     }
-  }
 }
 ```
 
